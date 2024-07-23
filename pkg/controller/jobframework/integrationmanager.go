@@ -24,7 +24,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -40,7 +40,7 @@ type JobReconcilerInterface interface {
 	SetupWithManager(mgr ctrl.Manager) error
 }
 
-type ReconcilerFactory func(client client.Client, record record.EventRecorder, opts ...Option) JobReconcilerInterface
+type ReconcilerFactory func(client client.Client, record events.EventRecorder, opts ...Option) JobReconcilerInterface
 
 // IntegrationCallbacks groups a set of callbacks used to integrate a new framework.
 type IntegrationCallbacks struct {

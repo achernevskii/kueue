@@ -69,11 +69,12 @@ func AsIndexer(builder *fake.ClientBuilder) client.FieldIndexer {
 }
 
 type EventRecord struct {
-	Key       types.NamespacedName
+	Regarding types.NamespacedName
+	Related   types.NamespacedName
 	EventType string
 	Reason    string
+	Action    string
 	Message   string
-	// add annotations if ever needed
 }
 
 type EventRecorder struct {
@@ -81,25 +82,27 @@ type EventRecorder struct {
 	RecordedEvents []EventRecord
 }
 
-func (tr *EventRecorder) Event(object runtime.Object, eventtype, reason, message string) {
-	tr.Eventf(object, eventtype, reason, message)
+func (tr *EventRecorder) Eventf(regarding, related runtime.Object, eventtype, reason, action, note string, args ...interface{}) {
+	tr.AnnotatedEventf(regarding, related, eventtype, reason, action, note, args...)
 }
 
-func (tr *EventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...interface{}) {
-	tr.AnnotatedEventf(object, nil, eventtype, reason, messageFmt, args...)
-}
-
-func (tr *EventRecorder) AnnotatedEventf(targetObject runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...interface{}) {
+func (tr *EventRecorder) AnnotatedEventf(targetObject runtime.Object, relatedObject runtime.Object, eventtype, reason, action, note string, args ...interface{}) {
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
-	key := types.NamespacedName{}
-	if cobj, iscobj := targetObject.(client.Object); iscobj {
-		key = client.ObjectKeyFromObject(cobj)
+	regardingKey := types.NamespacedName{}
+	if cobj, iscobj := targetObject.(client.Object); targetObject != nil && iscobj {
+		regardingKey = client.ObjectKeyFromObject(cobj)
+	}
+	relatedKey := types.NamespacedName{}
+	if cobj, iscobj := relatedObject.(client.Object); relatedObject != nil && iscobj {
+		relatedKey = client.ObjectKeyFromObject(cobj)
 	}
 	tr.RecordedEvents = append(tr.RecordedEvents, EventRecord{
-		Key:       key,
+		Regarding: regardingKey,
+		Related:   relatedKey,
 		EventType: eventtype,
 		Reason:    reason,
-		Message:   fmt.Sprintf(messageFmt, args...),
+		Action:    action,
+		Message:   fmt.Sprintf(note, args...),
 	})
 }

@@ -25,8 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation"
-	"k8s.io/client-go/tools/record"
-	"k8s.io/klog/v2"
+	"k8s.io/client-go/tools/events"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -61,7 +60,7 @@ var (
 // JobReconciler reconciles a GenericJob object
 type JobReconciler struct {
 	client                     client.Client
-	record                     record.EventRecorder
+	record                     events.EventRecorder
 	manageJobsWithoutQueueName bool
 	waitForPodsReady           bool
 }
@@ -120,7 +119,7 @@ var DefaultOptions = Options{}
 
 func NewReconciler(
 	client client.Client,
-	record record.EventRecorder,
+	record events.EventRecorder,
 	opts ...Option) *JobReconciler {
 	options := DefaultOptions
 	for _, opt := range opts {
@@ -224,7 +223,7 @@ func (r *JobReconciler) ReconcileGenericJob(ctx context.Context, req ctrl.Reques
 					log.Error(err, "suspending child job failed")
 					return ctrl.Result{}, err
 				}
-				r.record.Eventf(object, corev1.EventTypeNormal, "Suspended", "Kueue managed child job suspended")
+				r.record.Eventf(object, nil, corev1.EventTypeNormal, Suspended, Suspended, "Kueue managed child job suspended")
 			}
 		}
 		return ctrl.Result{}, nil
@@ -247,7 +246,7 @@ func (r *JobReconciler) ReconcileGenericJob(ctx context.Context, req ctrl.Reques
 			}
 		}
 
-		r.record.Eventf(object, corev1.EventTypeNormal, "FinishedWorkload",
+		r.record.Eventf(wl, object, corev1.EventTypeNormal, FinishedWorkload, FinalizingWorkload,
 			"Workload '%s' is declared finished", workload.Key(wl))
 		return ctrl.Result{}, r.removeFinalizer(ctx, wl)
 	}
@@ -500,8 +499,8 @@ func (r *JobReconciler) ensureOneWorkload(ctx context.Context, job GenericJob, o
 		}
 		if err == nil {
 			existedWls++
-			r.record.Eventf(object, corev1.EventTypeNormal, "DeletedWorkload",
-				"Deleted not matching Workload: %v", wlKey)
+			r.record.Eventf(wl, object, corev1.EventTypeNormal, DeletedWorkload, DeletedWorkload,
+				"Deleted not matching Workload: %s", wlKey)
 		}
 	}
 
@@ -594,8 +593,8 @@ func (r *JobReconciler) updateWorkloadToMatchJob(ctx context.Context, job Generi
 		return nil, fmt.Errorf("updating existed workload: %w", err)
 	}
 
-	r.record.Eventf(object, corev1.EventTypeNormal, "UpdatedWorkload",
-		"Updated not matching Workload for suspended job: %v", klog.KObj(wl))
+	r.record.Eventf(wl, object, corev1.EventTypeNormal, UpdatedWorkload, UpdatedWorkload,
+		"Updated not matching Workload for suspended job: %s", workload.Key(wl))
 	return newWl, nil
 }
 
@@ -613,7 +612,7 @@ func (r *JobReconciler) startJob(ctx context.Context, job GenericJob, object cli
 		return err
 	}
 
-	r.record.Eventf(object, corev1.EventTypeNormal, "Started",
+	r.record.Eventf(object, wl, corev1.EventTypeNormal, Started, Started,
 		"Admitted by clusterQueue %v", wl.Status.Admission.ClusterQueue)
 
 	return nil
@@ -629,7 +628,7 @@ func (r *JobReconciler) stopJob(ctx context.Context, job GenericJob, wl *kueue.W
 	if jws, implements := job.(JobWithCustomStop); implements {
 		stoppedNow, err := jws.Stop(ctx, r.client, info, stopReason, eventMsg)
 		if stoppedNow {
-			r.record.Eventf(object, corev1.EventTypeNormal, "Stopped", eventMsg)
+			r.record.Eventf(object, wl, corev1.EventTypeNormal, Stopped, Stopped, eventMsg)
 		}
 
 		return err
@@ -647,7 +646,7 @@ func (r *JobReconciler) stopJob(ctx context.Context, job GenericJob, wl *kueue.W
 		return err
 	}
 
-	r.record.Eventf(object, corev1.EventTypeNormal, "Stopped", eventMsg)
+	r.record.Eventf(object, wl, corev1.EventTypeNormal, Stopped, Stopped, eventMsg)
 	return nil
 }
 
@@ -801,8 +800,8 @@ func (r *JobReconciler) handleJobWithNoWorkload(ctx context.Context, job Generic
 	if err = r.client.Create(ctx, wl); err != nil {
 		return err
 	}
-	r.record.Eventf(object, corev1.EventTypeNormal, "CreatedWorkload",
-		"Created Workload: %v", workload.Key(wl))
+	r.record.Eventf(wl, object, corev1.EventTypeNormal, CreatedWorkload, CreatedWorkload,
+		"Created Workload: %s", workload.Key(wl))
 	return nil
 }
 
@@ -849,7 +848,7 @@ func GetPodSetsInfoFromWorkload(wl *kueue.Workload) []podset.PodSetInfo {
 // newJob should return a new empty job.
 // newWorkloadHandler it's optional, if added it should return a new workload event handler.
 func NewGenericReconciler(newJob func() GenericJob, newWorkloadHandler func(client.Client) handler.EventHandler) ReconcilerFactory {
-	return func(client client.Client, record record.EventRecorder, opts ...Option) JobReconcilerInterface {
+	return func(client client.Client, record events.EventRecorder, opts ...Option) JobReconcilerInterface {
 		return &genericReconciler{
 			jr:                 NewReconciler(client, record, opts...),
 			newJob:             newJob,

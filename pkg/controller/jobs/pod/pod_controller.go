@@ -37,7 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/validation"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -503,7 +503,7 @@ func (p *Pod) constructGroupPodSets() ([]kueue.PodSet, error) {
 }
 
 // validatePodGroupMetadata validates metadata of all members of the pod group
-func (p *Pod) validatePodGroupMetadata(r record.EventRecorder, activePods []corev1.Pod) error {
+func (p *Pod) validatePodGroupMetadata(r events.EventRecorder, activePods []corev1.Pod) error {
 	groupTotalCount, err := p.groupTotalCount()
 	if err != nil {
 		return err
@@ -512,7 +512,7 @@ func (p *Pod) validatePodGroupMetadata(r record.EventRecorder, activePods []core
 
 	if len(activePods) < groupTotalCount {
 		errMsg := fmt.Sprintf("'%s' group total count is less than the actual number of pods in the cluster", p.groupName())
-		r.Eventf(p.Object(), corev1.EventTypeWarning, "ErrWorkloadCompose", errMsg)
+		r.Eventf(p.Object(), nil, corev1.EventTypeWarning, jobframework.ErrWorkloadCompose, jobframework.WorkloadCompose, errMsg)
 		return jobframework.UnretryableError(errMsg)
 	}
 
@@ -614,7 +614,7 @@ func (p *Pod) cleanupExcessPods(ctx context.Context, c client.Client, totalCount
 	return nil
 }
 
-func (p *Pod) ConstructComposableWorkload(ctx context.Context, c client.Client, r record.EventRecorder) (*kueue.Workload, error) {
+func (p *Pod) ConstructComposableWorkload(ctx context.Context, c client.Client, r events.EventRecorder) (*kueue.Workload, error) {
 	object := p.Object()
 	log := ctrl.LoggerFrom(ctx)
 
@@ -675,7 +675,7 @@ func (p *Pod) ConstructComposableWorkload(ctx context.Context, c client.Client, 
 	wl.Spec.PodSets, err = p.constructGroupPodSets()
 	if err != nil {
 		if jobframework.IsUnretryableError(err) {
-			r.Eventf(object, corev1.EventTypeWarning, "ErrWorkloadCompose", err.Error())
+			r.Eventf(object, nil, corev1.EventTypeWarning, jobframework.ErrWorkloadCompose, jobframework.WorkloadCompose, err.Error())
 		}
 		return nil, err
 	}

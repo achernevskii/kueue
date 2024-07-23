@@ -452,7 +452,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Started",
 					Message:   "Admitted by clusterQueue cq",
@@ -582,7 +582,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 					Message:   "The workload is deactivated",
@@ -1051,7 +1051,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Started",
 					Message:   "Admitted by clusterQueue cq",
@@ -1083,7 +1083,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Started",
 					Message:   "Admitted by clusterQueue cq",
@@ -1106,7 +1106,7 @@ func TestReconciler(t *testing.T) {
 			wantErr: jobframework.ErrNoMatchingWorkloads,
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "DeletedWorkload",
 					Message:   "Deleted not matching Workload: ns/a",
@@ -1134,7 +1134,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "UpdatedWorkload",
 					Message:   "Updated not matching Workload for suspended job: ns/a",
@@ -1175,7 +1175,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Started",
 					Message:   "Admitted by clusterQueue cq",
@@ -1208,13 +1208,13 @@ func TestReconciler(t *testing.T) {
 			wantErr: jobframework.ErrNoMatchingWorkloads,
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 					Message:   "No matching Workload",
 				},
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "DeletedWorkload",
 					Message:   "Deleted not matching Workload: ns/a",
@@ -1245,13 +1245,13 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 					Message:   "No matching Workload",
 				},
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "CreatedWorkload",
 					Message:   "Created Workload: ns/job-job-ed7d5",
@@ -1346,13 +1346,13 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 					Message:   "No matching Workload",
 				},
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "CreatedWorkload",
 					Message:   "Created Workload: ns/job-job-ed7d5",
@@ -1397,7 +1397,7 @@ func TestReconciler(t *testing.T) {
 				Obj(),
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Suspended",
 					Message:   "Kueue managed child job suspended",
@@ -1458,7 +1458,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Suspended",
 					Message:   "Kueue managed child job suspended",
@@ -1527,7 +1527,7 @@ func TestReconciler(t *testing.T) {
 			wantErr: jobframework.ErrExtraWorkloads,
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "DeletedWorkload",
 					Message:   "Deleted not matching Workload: ns/second-workload",
@@ -1570,7 +1570,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 				},
@@ -1697,7 +1697,7 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "FinishedWorkload",
 					Message:   "Workload 'ns/a' is declared finished",
@@ -1735,13 +1735,13 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 					Message:   "No matching Workload",
 				},
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "CreatedWorkload",
 					Message:   "Created Workload: ns/job-job-ed7d5",
@@ -1779,13 +1779,13 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 					Message:   "No matching Workload",
 				},
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "CreatedWorkload",
 					Message:   "Created Workload: ns/job-job-ed7d5",
@@ -1825,13 +1825,13 @@ func TestReconciler(t *testing.T) {
 			},
 			wantEvents: []utiltesting.EventRecord{
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "Stopped",
 					Message:   "No matching Workload",
 				},
 				{
-					Key:       types.NamespacedName{Name: "job", Namespace: "ns"},
+					Regarding: types.NamespacedName{Name: "job", Namespace: "ns"},
 					EventType: "Normal",
 					Reason:    "CreatedWorkload",
 					Message:   "Created Workload: ns/job-job-ed7d5",
